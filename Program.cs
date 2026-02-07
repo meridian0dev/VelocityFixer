@@ -19,16 +19,21 @@ namespace VelocityFixer
             {
                 Console.Clear();
                 Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
-                Console.WriteLine("║                  VELOCITY FIXER v1.0                           ║");
+                Console.WriteLine("║                  VELOCITY FIXER v1.0.1                         ║");
                 Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("  1. Install Dependencies");
-                Console.WriteLine("  2. Fix Tabs");
-                Console.WriteLine("  3. Setup Fishstrap");
-                Console.WriteLine("  4. Change DNS Server");
-                Console.WriteLine("  5. Fix Roblox Crashing");
-                Console.WriteLine("  6. Fix Velocity Crashes");
-                Console.WriteLine("  7. Exit\n");
+                Console.Write("  1. Install Velocity to Desktop ");
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine("(may become outdated anytime)");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("  2. Install Dependencies");
+                Console.WriteLine("  3. Fix Tabs");
+                Console.WriteLine("  4. Setup Fishstrap");
+                Console.WriteLine("  5. Setup Voidstrap");
+                Console.WriteLine("  6. Change DNS Server");
+                Console.WriteLine("  7. Fix Roblox Crashing");
+                Console.WriteLine("  8. Fix Velocity Crashes");
+                Console.WriteLine("  9. Exit\n");
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write("  → Select option: ");
                 
@@ -37,24 +42,30 @@ namespace VelocityFixer
                 switch (choice)
                 {
                     case "1":
-                        await InstallDependencies();
+                        await InstallVelocity();
                         break;
                     case "2":
-                        await FixTabs();
+                        await InstallDependencies();
                         break;
                     case "3":
-                        await SetupFishstrap();
+                        await FixTabs();
                         break;
                     case "4":
-                        await ChangeDNS();
+                        await SetupFishstrap();
                         break;
                     case "5":
-                        await FixRobloxCrashing();
+                        await SetupVoidstrap();
                         break;
                     case "6":
-                        await FixVelocityCrashes();
+                        await ChangeDNS();
                         break;
                     case "7":
+                        await FixRobloxCrashing();
+                        break;
+                    case "8":
+                        await FixVelocityCrashes();
+                        break;
+                    case "9":
                         return;
                     default:
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -64,6 +75,81 @@ namespace VelocityFixer
                         break;
                 }
             }
+        }
+
+        static async Task InstallVelocity()
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
+            Console.WriteLine("║                INSTALLING VELOCITY TO DESKTOP                  ║");
+            Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
+            Console.ForegroundColor = ConsoleColor.White;
+
+            try
+            {
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string velocityZipPath = Path.Combine(Path.GetTempPath(), "Velocity.zip");
+                string velocityFolderPath = Path.Combine(desktopPath, "Velocity");
+
+                LogWithTimestamp("Downloading...", ConsoleColor.Yellow);
+
+                using (var client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromMinutes(10);
+                    
+                    var response = await client.GetAsync("https://pixeldrain.com/api/file/ShyU39kZ", HttpCompletionOption.ResponseHeadersRead);
+                    response.EnsureSuccessStatusCode();
+                    
+                    var totalBytes = response.Content.Headers.ContentLength ?? 0;
+                    var buffer = new byte[8192];
+                    var totalRead = 0L;
+                    
+                    using (var contentStream = await response.Content.ReadAsStreamAsync())
+                    using (var fileStream = new FileStream(velocityZipPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                    {
+                        int bytesRead;
+                        while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            await fileStream.WriteAsync(buffer, 0, bytesRead);
+                            totalRead += bytesRead;
+                            
+                            if (totalBytes > 0)
+                            {
+                                var percentage = (int)((totalRead * 100) / totalBytes);
+                                Console.Write($"\r    Progress: {percentage}% ({totalRead / 1024 / 1024}MB / {totalBytes / 1024 / 1024}MB)");
+                            }
+                        }
+                    }
+                    Console.WriteLine();
+                }
+
+                LogWithTimestamp($"Complete: {new FileInfo(velocityZipPath).Length / 1024 / 1024}MB", ConsoleColor.Green);
+                LogWithTimestamp("Extracting to Desktop...", ConsoleColor.Yellow);
+                
+                if (Directory.Exists(velocityFolderPath))
+                {
+                    Directory.Delete(velocityFolderPath, true);
+                }
+                
+                ZipFile.ExtractToDirectory(velocityZipPath, velocityFolderPath, true);
+                File.Delete(velocityZipPath);
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("\n╔════════════════════════════════════════════════════════════════╗");
+                Console.WriteLine("║          ✓ VELOCITY INSTALLED TO DESKTOP                      ║");
+                Console.WriteLine("╚════════════════════════════════════════════════════════════════╝");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"\n  [!] Error: {ex.Message}");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            
+            Console.WriteLine("\nPress any key to return...");
+            Console.ReadKey();
         }
 
         static async Task InstallDependencies()
@@ -203,17 +289,30 @@ namespace VelocityFixer
         {
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
-            Console.WriteLine("║                   SETTING UP FISHSTRAP                         ║");
-            Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
+            
+            string fishstrapPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fishstrap");
+            bool fishstrapExists = Directory.Exists(fishstrapPath);
+            
+            if (fishstrapExists)
+            {
+                Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
+                Console.WriteLine("║                   SETTING UP FISHSTRAP                         ║");
+                Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
+            }
+            else
+            {
+                Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
+                Console.WriteLine("║            SETTING UP FISHSTRAP (Unavailable)                  ║");
+                Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
+            }
+            
             Console.ForegroundColor = ConsoleColor.White;
 
             try
             {
-                string fishstrapPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fishstrap");
                 string settingsPath = Path.Combine(fishstrapPath, "Settings.json");
 
-                if (!Directory.Exists(fishstrapPath))
+                if (!fishstrapExists)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("  [!] Fishstrap not found. Please install Fishstrap first.");
@@ -277,6 +376,183 @@ namespace VelocityFixer
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("\n╔════════════════════════════════════════════════════════════════╗");
                 Console.WriteLine("║            ✓ FISHSTRAP CONFIGURED SUCCESSFULLY                 ║");
+                Console.WriteLine("╚════════════════════════════════════════════════════════════════╝");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"\n  [!] Error: {ex.Message}");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            
+            Console.WriteLine("\nPress any key to return...");
+            Console.ReadKey();
+        }
+
+        static async Task SetupVoidstrap()
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            
+            string voidstrapPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Voidstrap");
+            bool voidstrapExists = Directory.Exists(voidstrapPath);
+            
+            if (voidstrapExists)
+            {
+                Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
+                Console.WriteLine("║                   SETTING UP VOIDSTRAP                         ║");
+                Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
+            }
+            else
+            {
+                Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
+                Console.WriteLine("║            SETTING UP VOIDSTRAP (Unavailable)                  ║");
+                Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
+            }
+            
+            Console.ForegroundColor = ConsoleColor.White;
+
+            try
+            {
+                string settingsPath = Path.Combine(voidstrapPath, "AppSettings.json");
+
+                if (!voidstrapExists)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("  [!] Voidstrap not found. Please install Voidstrap first.");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine("\nPress any key to return...");
+                    Console.ReadKey();
+                    return;
+                }
+
+                string versionsPath = Path.Combine(voidstrapPath, "Versions");
+                string rblxVersionsPath = Path.Combine(voidstrapPath, "RblxVersions");
+                
+                if (Directory.Exists(versionsPath))
+                {
+                    Directory.Delete(versionsPath, true);
+                }
+                
+                if (Directory.Exists(rblxVersionsPath))
+                {
+                    Directory.Delete(rblxVersionsPath, true);
+                }
+
+                LogWithTimestamp("Configuring...", ConsoleColor.Yellow);
+
+                string jsonContent = @"{
+  ""BootstrapperStyle"": 7,
+  ""BootstrapperIcon"": 0,
+  ""CleanerOptions"": 1,
+  ""CleanerDirectories"": [
+    ""RobloxCache"",
+    ""VoidstrapLogs"",
+    ""RobloxLogs""
+  ],
+  ""BootstrapperTitle"": ""Voidstrap"",
+  ""BootstrapperIconCustomLocation"": """",
+  ""Theme2"": 4,
+  ""SelectedCustomTheme"": null,
+  ""CheckForUpdates"": true,
+  ""SelectedCpuPriority"": ""Automatic"",
+  ""MaxCpuCores"": 12,
+  ""TotalLogicalCores"": 12,
+  ""TotalPhysicalCores"": 6,
+  ""IsChannelEnabled"": true,
+  ""UpdateRoblox"": true,
+  ""DisableCrash"": true,
+  ""CpuCoreLimit"": 12,
+  ""ShiftlockCursorSelectedPath"": """",
+  ""UseCustomIcon"": """",
+  ""CustomGameName"": """",
+  ""PriorityLimit"": ""High"",
+  ""SelectedStatus"": ""Gray"",
+  ""ArrowCursorSelectedPath"": """",
+  ""ArrowFarCursorSelectedPath"": """",
+  ""IBeamCursorSelectedPath"": """",
+  ""DisableSplashScreen"": true,
+  ""EnableAnalytics"": true,
+  ""ShouldExportConfig"": true,
+  ""ShouldExportLogs"": true,
+  ""UseFastFlagManager"": false,
+  ""WPFSoftwareRender"": false,
+  ""FixTeleports"": true,
+  ""ConfirmLaunches"": true,
+  ""HasLaunchedGame"": false,
+  ""BackgroundWindow"": true,
+  ""UsePlaceId"": false,
+  ""PlaceId"": """",
+  ""OptimizeRoblox"": false,
+  ""BackgroundUpdatesEnabled"": true,
+  ""VoidNotify"": true,
+  ""MultiInstanceLaunching"": true,
+  ""ServerPingCounter"": false,
+  ""ShowServerDetailsUI"": false,
+  ""EnableCustomStatusDisplay"": true,
+  ""RenameClientToEuroTrucks2"": false,
+  ""SnowWOWSOCOOLWpfSnowbtw"": false,
+  ""MotionBlurOverlay"": false,
+  ""MotionBlurOverlay2"": false,
+  ""ClientPath"": ""Roblox\\Player"",
+  ""Locale"": ""en-US"",
+  ""BufferSizeKbte"": ""1024"",
+  ""BufferSizeKbtes"": ""2048"",
+  ""SkyboxName"": ""Pandora"",
+  ""FontName"": ""Default"",
+  ""LastServerSave"": ""112757576021097"",
+  ""SkyBoxDataSending"": false,
+  ""FFlagRPCDisplayer"": true,
+  ""FPSCounter"": false,
+  ""CurrentTimeDisplay"": false,
+  ""ExclusiveFullscreen"": false,
+  ""Crosshair"": false,
+  ""LockDefault"": false,
+  ""GameWIP"": false,
+  ""ForceRobloxLanguage"": true,
+  ""DarkTextures"": false,
+  ""EnableActivityTracking"": true,
+  ""OverClockCPU"": false,
+  ""exitondissy"": false,
+  ""ServerUptimeBetterBLOXcuzitsbetterXD"": true,
+  ""DownloadingStringFormat"": ""Downloading {0} - {1}MB / {2}MB"",
+  ""ConnectCloset"": false,
+  ""Fullbright"": false,
+  ""GameIconChecked"": true,
+  ""ServerLocationGame"": false,
+  ""GameNameChecked"": true,
+  ""GameCreatorChecked"": true,
+  ""GameStatusChecked"": true,
+  ""DX12Like"": true,
+  ""UseDiscordRichPresence"": true,
+  ""HideRPCButtons"": true,
+  ""ShowAccountOnRichPresence"": false,
+  ""MultiAccount"": false,
+  ""ShowServerDetails"": true,
+  ""CustomFontLocation"": """",
+  ""CursorType"": 0,
+  ""CustomIntegrations"": [],
+  ""UseDisableAppPatch"": false,
+  ""Channel"": ""production"",
+  ""ChannelHash"": """",
+  ""LaunchGameID"": """",
+  ""IsGameEnabled"": false,
+  ""MatchUniverseId"": true,
+  ""TargetUniverseId"": null,
+  ""IsBetterServersEnabled"": false,
+  ""OverClockGPU"": false,
+  ""GRADmentFR"": false,
+  ""VoidRPC"": false,
+  ""AntiAFK"": false,
+  ""InGameResolution"": null
+}";
+
+                File.WriteAllText(settingsPath, jsonContent);
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("\n╔════════════════════════════════════════════════════════════════╗");
+                Console.WriteLine("║            ✓ VOIDSTRAP CONFIGURED SUCCESSFULLY                 ║");
                 Console.WriteLine("╚════════════════════════════════════════════════════════════════╝");
                 Console.ForegroundColor = ConsoleColor.White;
             }
@@ -404,12 +680,38 @@ namespace VelocityFixer
 
             try
             {
-                string robloxPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Roblox");
+                string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                
+                string robloxPath = Path.Combine(localAppData, "Roblox");
+                string bloxstrapPath = Path.Combine(localAppData, "Bloxstrap");
+                string fishstrapPath = Path.Combine(localAppData, "Fishstrap");
+                string voidstrapPath = Path.Combine(localAppData, "Voidstrap");
 
-                if (!Directory.Exists(robloxPath))
+                bool anyExists = Directory.Exists(robloxPath) || Directory.Exists(bloxstrapPath) || 
+                                Directory.Exists(fishstrapPath) || Directory.Exists(voidstrapPath);
+
+                if (!anyExists)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("  [!] Roblox folder not found.");
+                    Console.WriteLine("  [!] No Roblox/Bloxstrap/Fishstrap/Voidstrap folders found.");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine("\nPress any key to return...");
+                    Console.ReadKey();
+                    return;
+                }
+
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("  ⚠️  WARNING: This will delete cache, logs, and settings.");
+                Console.WriteLine("  ⚠️  This action will log you out of your account.");
+                Console.Write("\n  Are you sure you want to continue? (y/n): ");
+                Console.ForegroundColor = ConsoleColor.White;
+                
+                string confirmation = Console.ReadLine()?.ToLower();
+                
+                if (confirmation != "y" && confirmation != "yes")
+                {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine("\n  Operation cancelled.");
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine("\nPress any key to return...");
                     Console.ReadKey();
@@ -428,23 +730,49 @@ namespace VelocityFixer
                     "GlobalBasicSettings_13.xml" 
                 };
 
-                LogWithTimestamp("Removing folders...", ConsoleColor.Yellow);
-                foreach (var folder in foldersToDelete)
-                {
-                    string folderPath = Path.Combine(robloxPath, folder);
-                    if (Directory.Exists(folderPath))
-                    {
-                        Directory.Delete(folderPath, true);
-                    }
-                }
+                var bootstrappers = new[] 
+                { 
+                    ("Roblox", robloxPath),
+                    ("Bloxstrap", bloxstrapPath),
+                    ("Fishstrap", fishstrapPath),
+                    ("Voidstrap", voidstrapPath)
+                };
 
-                LogWithTimestamp("Removing files...", ConsoleColor.Yellow);
-                foreach (var file in filesToDelete)
+                foreach (var (name, path) in bootstrappers)
                 {
-                    string filePath = Path.Combine(robloxPath, file);
-                    if (File.Exists(filePath))
+                    if (!Directory.Exists(path))
+                        continue;
+
+                    LogWithTimestamp($"Processing {name}...", ConsoleColor.Yellow);
+
+                    foreach (var folder in foldersToDelete)
                     {
-                        File.Delete(filePath);
+                        string folderPath = Path.Combine(path, folder);
+                        if (Directory.Exists(folderPath))
+                        {
+                            try
+                            {
+                                Directory.Delete(folderPath, true);
+                            }
+                            catch
+                            {
+                            }
+                        }
+                    }
+
+                    foreach (var file in filesToDelete)
+                    {
+                        string filePath = Path.Combine(path, file);
+                        if (File.Exists(filePath))
+                        {
+                            try
+                            {
+                                File.Delete(filePath);
+                            }
+                            catch
+                            {
+                            }
+                        }
                     }
                 }
 
