@@ -116,7 +116,7 @@ Output: `bin\Release\net10.0\win-x64\publish\VelocityFixer.exe`
 
 ## License
 
-Do whatever you want with this. I don't care. Open source, modify it, redistribute it, claim you made it—I really don't give a fuck. Just don't come crying to me if something breaks.
+Do whatever you want with this. I don't care. Open source, modify it, redistribute it, claim you made it I really don't give a fuck. Just don't come crying to me if something breaks.
 
 ---
 
