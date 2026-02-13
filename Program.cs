@@ -12,65 +12,63 @@ namespace VelocityFixer
     {
         static async Task Main(string[] args)
         {
-            Console.Title = "Velocity Fixer";
-            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.Title = "Velocity Fixer v1.0.3 | by meridian_dev";
+            Console.ForegroundColor = ConsoleColor.Blue;
             
             while (true)
             {
                 Console.Clear();
-                Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("║                  VELOCITY FIXER v1.0.2                         ║");
-                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
+                Console.WriteLine("║                  VELOCITY FIXER v1.0.3                         ║");
                 Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write("  1. ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("Install Velocity to Desktop ");
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.WriteLine("(may become outdated anytime)");
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write("  2. ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Install Dependencies");
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write("  3. ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Fix Tabs");
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write("  4. ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Setup Fishstrap");
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write("  5. ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Setup Voidstrap");
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write("  6. ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("Change DNS Server ");
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.WriteLine("(cloudflare/google)");
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write("  7. ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Fix Roblox Crashing");
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write("  8. ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("Fix Velocity Crashes ");
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.WriteLine("(fixes on inject and on startup crashes)");
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write("  9. ");
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Exit\n");
-                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.ForegroundColor = ConsoleColor.Blue;
                 Console.Write("  → Select option: ");
                 Console.ForegroundColor = ConsoleColor.White;
                 
-                string choice = Console.ReadLine();
+                string choice = Console.ReadLine() ?? string.Empty;
                 
                 switch (choice)
                 {
@@ -101,8 +99,7 @@ namespace VelocityFixer
                     case "9":
                         return;
                     default:
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("\n  [!] Invalid option.");
+                        Console.ForegroundColor = ConsoleColor.Red;                        Console.WriteLine("\n  [!] Invalid option.");
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.ReadKey();
                         break;
@@ -113,11 +110,9 @@ namespace VelocityFixer
         static async Task InstallVelocity()
         {
             Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
             Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
             Console.WriteLine("║                INSTALLING VELOCITY TO DESKTOP                  ║");
-            Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
             Console.ForegroundColor = ConsoleColor.White;
 
@@ -127,12 +122,18 @@ namespace VelocityFixer
                 string velocityZipPath = Path.Combine(Path.GetTempPath(), "Velocity.zip");
                 string velocityFolderPath = Path.Combine(desktopPath, "Velocity");
 
-                LogWithTimestamp("Downloading...", ConsoleColor.Yellow);
+                LogWithTimestamp("Downloading...", ConsoleColor.DarkYellow);
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine("  (Catbox can be slow, please be patient)\n");
+                Console.ForegroundColor = ConsoleColor.White;
 
-                var client = new HttpClient();
-                client.Timeout = TimeSpan.FromMinutes(10);
+                var client = new HttpClient
+                {
+                    Timeout = TimeSpan.FromMinutes(10)
+                };
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
                 
-                var response = await client.GetAsync("https://pixeldrain.com/api/file/rTjRFR8w", HttpCompletionOption.ResponseHeadersRead);
+                var response = await client.GetAsync("https://files.catbox.moe/u6xx7q.zip", HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
                 
                 long totalBytes = response.Content.Headers.ContentLength ?? 0;
@@ -140,13 +141,13 @@ namespace VelocityFixer
                 long totalRead = 0;
                 
                 var contentStream = await response.Content.ReadAsStreamAsync();
-                var fileStream = new FileStream(velocityZipPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                using var fileStream = new FileStream(velocityZipPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
                 
                 int bytesRead;
                 while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                 {
                     await fileStream.WriteAsync(buffer, 0, bytesRead);
-                    totalRead = totalRead + bytesRead;
+                    totalRead += bytesRead;
                     
                     if (totalBytes > 0)
                     {
@@ -166,7 +167,7 @@ namespace VelocityFixer
                         Console.Write(new string('░', barWidth - filled));
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.Write($"] ");
-                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.ForegroundColor = ConsoleColor.Blue;
                         Console.Write($"{percentage}% ");
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.Write($"({downloadedMB}MB/{totalMB}MB)");
@@ -174,18 +175,15 @@ namespace VelocityFixer
                     }
                 }
                 
-                Console.WriteLine();
                 fileStream.Close();
                 contentStream.Close();
-                client.Dispose();
 
-                LogWithTimestamp($"Complete: {new FileInfo(velocityZipPath).Length / 1024 / 1024}MB", ConsoleColor.Green);
-                LogWithTimestamp("Extracting to Desktop...", ConsoleColor.Yellow);
+                Console.WriteLine();
+                LogWithTimestamp($"Download complete: {new FileInfo(velocityZipPath).Length / 1024 / 1024}MB", ConsoleColor.Green);
+                LogWithTimestamp("Extracting to Desktop...", ConsoleColor.DarkYellow);
                 
                 if (Directory.Exists(velocityFolderPath))
-                {
                     Directory.Delete(velocityFolderPath, true);
-                }
                 
                 ZipFile.ExtractToDirectory(velocityZipPath, velocityFolderPath, true);
                 File.Delete(velocityZipPath);
@@ -194,6 +192,8 @@ namespace VelocityFixer
                 Console.WriteLine("\n╔════════════════════════════════════════════════════════════════╗");
                 Console.WriteLine("║          ✓ VELOCITY INSTALLED TO DESKTOP                      ║");
                 Console.WriteLine("╚════════════════════════════════════════════════════════════════╝");
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine($"  Location: {velocityFolderPath}");
                 Console.ForegroundColor = ConsoleColor.White;
             }
             catch (Exception ex)
@@ -206,52 +206,130 @@ namespace VelocityFixer
             Console.WriteLine("\nPress any key to return...");
             Console.ReadKey();
         }
-
         static async Task InstallDependencies()
         {
             Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
             Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
             Console.WriteLine("║               INSTALLING DEPENDENCIES                          ║");
-            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
+            Console.ForegroundColor = ConsoleColor.White;
+
+            Console.WriteLine("  Select package manager:\n");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.Write("  1. ");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("WinGet ");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine("(Built into Windows 10+)");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.Write("  2. ");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("Chocolatey ");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine("(Requires choco installed)");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.Write("  3. ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Go Back\n");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write("  → Select option: ");
+            Console.ForegroundColor = ConsoleColor.White;
+            
+            string installChoice = Console.ReadLine() ?? string.Empty;
+            
+            if (installChoice == "3")
+            {
+                return;
+            }
+            else if (installChoice != "1" && installChoice != "2")
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\n  [!] Invalid option.");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine("\nPress any key to return...");
+                Console.ReadKey();
+                return;
+            }
+
+            bool useChoco = installChoice == "2";
+
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
+            Console.WriteLine("║               INSTALLING DEPENDENCIES                          ║");
             Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
             Console.ForegroundColor = ConsoleColor.White;
 
             try
             {
-                LogWithTimestamp("Installing DirectX Runtime...", ConsoleColor.Yellow);
+                LogWithTimestamp("Downloading DirectX Runtime...", ConsoleColor.DarkYellow);
                 string dxWebSetup = Path.Combine(Path.GetTempPath(), "dxwebsetup.exe");
-                var client = new HttpClient();
-                byte[] data = await client.GetByteArrayAsync("https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe");
-                File.WriteAllBytes(dxWebSetup, data);
-                client.Dispose();
-                await RunInstaller($"{dxWebSetup} /silent");
                 
-                LogWithTimestamp("Installing .NET 8.0...", ConsoleColor.Yellow);
-                await RunInstaller("winget install --id Microsoft.DotNet.Runtime.8 --silent --accept-source-agreements --accept-package-agreements");
+                using (var client = new HttpClient())
+                {
+                    byte[] data = await client.GetByteArrayAsync("https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe");
+                    File.WriteAllBytes(dxWebSetup, data);
+                }
                 
-                LogWithTimestamp("Installing .NET Desktop Runtime 8.0...", ConsoleColor.Yellow);
-                await RunInstaller("winget install --id Microsoft.DotNet.DesktopRuntime.8 --silent --accept-source-agreements --accept-package-agreements");
+                LogWithTimestamp("Installing DirectX...", ConsoleColor.DarkYellow);
+                await RunInstallerWithProgress($"{dxWebSetup} /silent");
                 
-                LogWithTimestamp("Installing .NET 10.0...", ConsoleColor.Yellow);
-                await RunInstaller("winget install --id Microsoft.DotNet.Runtime.Preview --silent --accept-source-agreements --accept-package-agreements");
-                
-                LogWithTimestamp("Installing .NET Framework 4.8...", ConsoleColor.Yellow);
-                await RunInstaller("winget install --id Microsoft.DotNet.Framework.DeveloperPack_4.8 --silent --accept-source-agreements --accept-package-agreements");
-                
-                LogWithTimestamp("Installing .NET Framework 4.8.1...", ConsoleColor.Yellow);
-                await RunInstaller("winget install --id Microsoft.DotNet.Framework.DeveloperPack_4 --silent --accept-source-agreements --accept-package-agreements");
-                
-                LogWithTimestamp("Installing Visual C++ Redistributables (All)...", ConsoleColor.Yellow);
-                await RunInstaller("winget install --id Microsoft.VCRedist.2015+.x64 --silent --accept-source-agreements --accept-package-agreements");
-                await RunInstaller("winget install --id Microsoft.VCRedist.2015+.x86 --silent --accept-source-agreements --accept-package-agreements");
-                await RunInstaller("winget install --id Microsoft.VCRedist.2013.x64 --silent --accept-source-agreements --accept-package-agreements");
-                await RunInstaller("winget install --id Microsoft.VCRedist.2013.x86 --silent --accept-source-agreements --accept-package-agreements");
-                await RunInstaller("winget install --id Microsoft.VCRedist.2012.x64 --silent --accept-source-agreements --accept-package-agreements");
-                await RunInstaller("winget install --id Microsoft.VCRedist.2012.x86 --silent --accept-source-agreements --accept-package-agreements");
-                await RunInstaller("winget install --id Microsoft.VCRedist.2010.x64 --silent --accept-source-agreements --accept-package-agreements");
-                await RunInstaller("winget install --id Microsoft.VCRedist.2010.x86 --silent --accept-source-agreements --accept-package-agreements");
+                if (useChoco)
+                {
+                    LogWithTimestamp("Installing .NET 8.0 Runtime...", ConsoleColor.DarkYellow);
+                    await RunInstallerWithProgress("choco install dotnet-8.0-runtime -y");
+                    
+                    LogWithTimestamp("Installing .NET 8.0 Desktop Runtime...", ConsoleColor.DarkYellow);
+                    await RunInstallerWithProgress("choco install dotnet-8.0-desktopruntime -y");
+                    
+                    LogWithTimestamp("Installing .NET 10.0 Preview...", ConsoleColor.DarkYellow);
+                    await RunInstallerWithProgress("choco install dotnet-runtime-preview -y");
+                    
+                    LogWithTimestamp("Installing .NET Framework 4.8...", ConsoleColor.DarkYellow);
+                    await RunInstallerWithProgress("choco install netfx-4.8 -y");
+                    
+                    LogWithTimestamp("Installing .NET Framework 4.8.1...", ConsoleColor.DarkYellow);
+                    await RunInstallerWithProgress("choco install netfx-4.8.1 -y");
+                    
+                    LogWithTimestamp("Installing Visual C++ Redistributables...", ConsoleColor.DarkYellow);
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.WriteLine("  (This may take a while, installing all versions)\n");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    
+                    await RunInstallerWithProgress("choco install vcredist-all -y");
+                }
+                else
+                {
+                    LogWithTimestamp("Installing .NET 8.0 Runtime...", ConsoleColor.DarkYellow);
+                    await RunInstallerWithProgress("winget install --id Microsoft.DotNet.Runtime.8 --silent --accept-source-agreements --accept-package-agreements");
+                    
+                    LogWithTimestamp("Installing .NET 8.0 Desktop Runtime...", ConsoleColor.DarkYellow);
+                    await RunInstallerWithProgress("winget install --id Microsoft.DotNet.DesktopRuntime.8 --silent --accept-source-agreements --accept-package-agreements");
+                    
+                    LogWithTimestamp("Installing .NET 10.0 Preview...", ConsoleColor.DarkYellow);
+                    await RunInstallerWithProgress("winget install --id Microsoft.DotNet.Runtime.Preview --silent --accept-source-agreements --accept-package-agreements");
+                    
+                    LogWithTimestamp("Installing .NET Framework 4.8...", ConsoleColor.DarkYellow);
+                    await RunInstallerWithProgress("winget install --id Microsoft.DotNet.Framework.DeveloperPack_4.8 --silent --accept-source-agreements --accept-package-agreements");
+                    
+                    LogWithTimestamp("Installing .NET Framework 4.8.1...", ConsoleColor.DarkYellow);
+                    await RunInstallerWithProgress("winget install --id Microsoft.DotNet.Framework.DeveloperPack_4 --silent --accept-source-agreements --accept-package-agreements");
+                    
+                    LogWithTimestamp("Installing Visual C++ Redistributables...", ConsoleColor.DarkYellow);
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.WriteLine("  (This may take a while, installing all versions)\n");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    
+                    await RunInstallerWithProgress("winget install --id Microsoft.VCRedist.2015+.x64 --silent --accept-source-agreements --accept-package-agreements");
+                    await RunInstallerWithProgress("winget install --id Microsoft.VCRedist.2015+.x86 --silent --accept-source-agreements --accept-package-agreements");
+                    await RunInstallerWithProgress("winget install --id Microsoft.VCRedist.2013.x64 --silent --accept-source-agreements --accept-package-agreements");
+                    await RunInstallerWithProgress("winget install --id Microsoft.VCRedist.2013.x86 --silent --accept-source-agreements --accept-package-agreements");
+                    await RunInstallerWithProgress("winget install --id Microsoft.VCRedist.2012.x64 --silent --accept-source-agreements --accept-package-agreements");
+                    await RunInstallerWithProgress("winget install --id Microsoft.VCRedist.2012.x86 --silent --accept-source-agreements --accept-package-agreements");
+                    await RunInstallerWithProgress("winget install --id Microsoft.VCRedist.2010.x64 --silent --accept-source-agreements --accept-package-agreements");
+                    await RunInstallerWithProgress("winget install --id Microsoft.VCRedist.2010.x86 --silent --accept-source-agreements --accept-package-agreements");
+                }
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("\n╔════════════════════════════════════════════════════════════════╗");
@@ -269,31 +347,34 @@ namespace VelocityFixer
             Console.WriteLine("\nPress any key to return...");
             Console.ReadKey();
         }
-
         static async Task FixTabs()
         {
             Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
             Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
             Console.WriteLine("║                      FIXING TABS                               ║");
-            Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
             Console.ForegroundColor = ConsoleColor.White;
 
             try
             {
-                string monacoUrl = "https://pixeldrain.com/api/file/x4SyWnYG";
+                string monacoUrl = "https://files.catbox.moe/odjdko.zip";
                 string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 string targetPath = Path.Combine(localAppData, "Velocity Ui");
                 string zipPath = Path.Combine(Path.GetTempPath(), "MonacoEditor.zip");
 
                 Directory.CreateDirectory(targetPath);
 
-                LogWithTimestamp("Downloading...", ConsoleColor.Yellow);
+                LogWithTimestamp("Downloading...", ConsoleColor.DarkYellow);
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine("  (Catbox can be slow, please be patient)\n");
+                Console.ForegroundColor = ConsoleColor.White;
                 
-                var client = new HttpClient();
-                client.Timeout = TimeSpan.FromMinutes(10);
+                var client = new HttpClient
+                {
+                    Timeout = TimeSpan.FromMinutes(10)
+                };
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
                 
                 var response = await client.GetAsync(monacoUrl, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
@@ -303,13 +384,13 @@ namespace VelocityFixer
                 long totalRead = 0;
                 
                 var contentStream = await response.Content.ReadAsStreamAsync();
-                var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                using var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
                 
                 int bytesRead;
                 while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                 {
                     await fileStream.WriteAsync(buffer, 0, bytesRead);
-                    totalRead = totalRead + bytesRead;
+                    totalRead += bytesRead;
                     
                     if (totalBytes > 0)
                     {
@@ -329,7 +410,7 @@ namespace VelocityFixer
                         Console.Write(new string('░', barWidth - filled));
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.Write($"] ");
-                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.ForegroundColor = ConsoleColor.Blue;
                         Console.Write($"{percentage}% ");
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.Write($"({downloadedMB}MB/{totalMB}MB)");
@@ -337,13 +418,12 @@ namespace VelocityFixer
                     }
                 }
                 
-                Console.WriteLine();
                 fileStream.Close();
                 contentStream.Close();
-                client.Dispose();
 
-                LogWithTimestamp($"Complete: {new FileInfo(zipPath).Length / 1024 / 1024}MB", ConsoleColor.Green);
-                LogWithTimestamp("Extracting...", ConsoleColor.Yellow);
+                Console.WriteLine();
+                LogWithTimestamp($"Download complete: {new FileInfo(zipPath).Length / 1024 / 1024}MB", ConsoleColor.Green);
+                LogWithTimestamp("Extracting...", ConsoleColor.DarkYellow);
                 
                 ZipFile.ExtractToDirectory(zipPath, targetPath, true);
                 File.Delete(zipPath);
@@ -365,11 +445,10 @@ namespace VelocityFixer
             Console.WriteLine("\nPress any key to return...");
             Console.ReadKey();
         }
-
         static async Task SetupFishstrap()
         {
             Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             
             string fishstrapPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fishstrap");
             bool fishstrapExists = Directory.Exists(fishstrapPath);
@@ -377,9 +456,7 @@ namespace VelocityFixer
             if (fishstrapExists)
             {
                 Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
-                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("║                   SETTING UP FISHSTRAP                         ║");
-                Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
             }
             else
@@ -387,7 +464,7 @@ namespace VelocityFixer
                 Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("║            SETTING UP FISHSTRAP (Unavailable)                  ║");
-                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
             }
             
@@ -407,16 +484,17 @@ namespace VelocityFixer
                     return;
                 }
 
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine("  ⚠️  WARNING: This will delete your original Fishstrap settings.");
                 Console.Write("\n  Continue? (y/n): ");
                 Console.ForegroundColor = ConsoleColor.White;
                 
-                string confirmation = Console.ReadLine()?.ToLower();
+                string confirmation = Console.ReadLine() ?? string.Empty;
+                confirmation = confirmation.ToLower();
                 
                 if (confirmation != "y" && confirmation != "yes")
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine("\n  Operation cancelled.");
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine("\nPress any key to return...");
@@ -427,11 +505,11 @@ namespace VelocityFixer
                 string versionsPath = Path.Combine(fishstrapPath, "Versions");
                 if (Directory.Exists(versionsPath))
                 {
-                    LogWithTimestamp("Removing old versions...", ConsoleColor.Yellow);
+                    LogWithTimestamp("Removing old versions...", ConsoleColor.DarkYellow);
                     Directory.Delete(versionsPath, true);
                 }
 
-                LogWithTimestamp("Configuring...", ConsoleColor.Yellow);
+                LogWithTimestamp("Configuring...", ConsoleColor.DarkYellow);
 
                 string jsonContent = @"{
   ""BootstrapperStyle"": 5,
@@ -491,11 +569,10 @@ namespace VelocityFixer
             Console.WriteLine("\nPress any key to return...");
             Console.ReadKey();
         }
-
         static async Task SetupVoidstrap()
         {
             Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             
             string voidstrapPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Voidstrap");
             bool voidstrapExists = Directory.Exists(voidstrapPath);
@@ -503,9 +580,7 @@ namespace VelocityFixer
             if (voidstrapExists)
             {
                 Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
-                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("║                   SETTING UP VOIDSTRAP                         ║");
-                Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
             }
             else
@@ -513,7 +588,7 @@ namespace VelocityFixer
                 Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("║            SETTING UP VOIDSTRAP (Unavailable)                  ║");
-                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
             }
             
@@ -533,16 +608,16 @@ namespace VelocityFixer
                     return;
                 }
 
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine("  ⚠️  WARNING: This will delete your original Voidstrap settings.");
                 Console.Write("\n  Continue? (y/n): ");
-                Console.ForegroundColor = ConsoleColor.White;
-                
-                string confirmation = Console.ReadLine()?.ToLower();
+                Console.ForegroundColor = ConsoleColor.White;                
+                string confirmation = Console.ReadLine() ?? string.Empty;
+                confirmation = confirmation.ToLower();
                 
                 if (confirmation != "y" && confirmation != "yes")
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine("\n  Operation cancelled.");
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine("\nPress any key to return...");
@@ -563,8 +638,7 @@ namespace VelocityFixer
                     Directory.Delete(rblxVersionsPath, true);
                 }
 
-                LogWithTimestamp("Configuring...", ConsoleColor.Yellow);
-
+                LogWithTimestamp("Configuring...", ConsoleColor.DarkYellow);
                 string jsonContent = @"{
   ""BootstrapperStyle"": 7,
   ""BootstrapperIcon"": 0,
@@ -595,8 +669,7 @@ namespace VelocityFixer
   ""ArrowCursorSelectedPath"": """",
   ""ArrowFarCursorSelectedPath"": """",
   ""IBeamCursorSelectedPath"": """",
-  ""DisableSplashScreen"": true,
-  ""EnableAnalytics"": true,
+  ""DisableSplashScreen"": true,  ""EnableAnalytics"": true,
   ""ShouldExportConfig"": true,
   ""ShouldExportLogs"": true,
   ""UseFastFlagManager"": false,
@@ -625,8 +698,7 @@ namespace VelocityFixer
   ""SkyboxName"": ""Pandora"",
   ""FontName"": ""Default"",
   ""LastServerSave"": ""112757576021097"",
-  ""SkyBoxDataSending"": false,
-  ""FFlagRPCDisplayer"": true,
+  ""SkyBoxDataSending"": false,  ""FFlagRPCDisplayer"": true,
   ""FPSCounter"": false,
   ""CurrentTimeDisplay"": false,
   ""ExclusiveFullscreen"": false,
@@ -655,8 +727,7 @@ namespace VelocityFixer
   ""ShowServerDetails"": true,
   ""CustomFontLocation"": """",
   ""CursorType"": 0,
-  ""CustomIntegrations"": [],
-  ""UseDisableAppPatch"": false,
+  ""CustomIntegrations"": [],  ""UseDisableAppPatch"": false,
   ""Channel"": ""production"",
   ""ChannelHash"": """",
   ""LaunchGameID"": """",
@@ -689,40 +760,36 @@ namespace VelocityFixer
             Console.WriteLine("\nPress any key to return...");
             Console.ReadKey();
         }
-
         static async Task ChangeDNS()
         {
             Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
             Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
             Console.WriteLine("║                   CHANGING DNS SERVER                          ║");
-            Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
             Console.ForegroundColor = ConsoleColor.White;
 
             Console.WriteLine("  Select DNS provider:\n");
-            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write("  1. ");
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("Cloudflare ");
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.WriteLine("(1.1.1.1)");
-            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write("  2. ");
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("Google ");
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.WriteLine("(8.8.8.8)");
-            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write("  3. ");
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Cancel\n");
-            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.ForegroundColor = ConsoleColor.Blue;
             Console.Write("  → Select option: ");
-            Console.ForegroundColor = ConsoleColor.White;
-            
-            string dnsChoice = Console.ReadLine();
+            Console.ForegroundColor = ConsoleColor.White;            
+            string dnsChoice = Console.ReadLine() ?? string.Empty;
             
             string primaryDNS = "";
             string secondaryDNS = "";
@@ -742,7 +809,7 @@ namespace VelocityFixer
             }
             else if (dnsChoice == "3")
             {
-                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine("\n  Operation cancelled.");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("\nPress any key to return...");
@@ -761,7 +828,7 @@ namespace VelocityFixer
 
             try
             {
-                LogWithTimestamp("Getting network adapters...", ConsoleColor.Yellow);
+                LogWithTimestamp("Getting network adapters...", ConsoleColor.DarkYellow);
                 
                 var getAdapters = new Process
                 {
@@ -783,14 +850,13 @@ namespace VelocityFixer
                 
                 foreach (string adapter in adapters)
                 {
-                    LogWithTimestamp($"Setting {providerName} DNS on {adapter}...", ConsoleColor.Yellow);
+                    LogWithTimestamp($"Setting {providerName} DNS on {adapter}...", ConsoleColor.DarkYellow);
                     
                     await RunInstaller($"netsh interface ip set dns \"{adapter}\" static {primaryDNS}");
                     await RunInstaller($"netsh interface ip add dns \"{adapter}\" {secondaryDNS} index=2");
                 }
 
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"\n╔════════════════════════════════════════════════════════════════╗");
+                Console.ForegroundColor = ConsoleColor.Green;                Console.WriteLine($"\n╔════════════════════════════════════════════════════════════════╗");
                 Console.WriteLine($"║            ✓ DNS CHANGED TO {providerName}                        ║");
                 Console.WriteLine("╚════════════════════════════════════════════════════════════════╝");
                 Console.ForegroundColor = ConsoleColor.White;
@@ -809,11 +875,9 @@ namespace VelocityFixer
         static async Task FixRobloxCrashing()
         {
             Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
             Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
             Console.WriteLine("║                   FIXING ROBLOX CRASHING                       ║");
-            Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
             Console.ForegroundColor = ConsoleColor.White;
 
@@ -839,17 +903,18 @@ namespace VelocityFixer
                     return;
                 }
 
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine("  ⚠️  WARNING: This will delete cache, logs, and settings.");
                 Console.WriteLine("  ⚠️  This action will log you out of your account.");
                 Console.Write("\n  Are you sure you want to continue? (y/n): ");
                 Console.ForegroundColor = ConsoleColor.White;
                 
-                string confirmation = Console.ReadLine()?.ToLower();
+                string confirmation = Console.ReadLine() ?? string.Empty;
+                confirmation = confirmation.ToLower();
                 
                 if (confirmation != "y" && confirmation != "yes")
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine("\n  Operation cancelled.");
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine("\nPress any key to return...");
@@ -885,12 +950,11 @@ namespace VelocityFixer
                     if (!Directory.Exists(path))
                         continue;
 
-                    LogWithTimestamp($"Processing {name}...", ConsoleColor.Yellow);
+                    LogWithTimestamp($"Processing {name}...", ConsoleColor.DarkYellow);
 
                     foreach (string folder in foldersToDelete)
                     {
-                        string folderPath = Path.Combine(path, folder);
-                        if (Directory.Exists(folderPath))
+                        string folderPath = Path.Combine(path, folder);                        if (Directory.Exists(folderPath))
                         {
                             try
                             {
@@ -924,14 +988,15 @@ namespace VelocityFixer
                 Console.WriteLine("╚════════════════════════════════════════════════════════════════╝");
                 Console.ForegroundColor = ConsoleColor.White;
 
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.Write("\n  Do you want to delete temp files? (y/n): ");
                 Console.ForegroundColor = ConsoleColor.White;
-                string response = Console.ReadLine()?.ToLower();
+                string response = Console.ReadLine() ?? string.Empty;
+                response = response.ToLower();
 
                 if (response == "y" || response == "yes")
                 {
-                    LogWithTimestamp("Cleaning temp files...", ConsoleColor.Yellow);
+                    LogWithTimestamp("Cleaning temp files...", ConsoleColor.DarkYellow);
                     
                     string tempPath = Path.GetTempPath();
                     string[] tempFiles = Directory.GetFiles(tempPath, "*.*", SearchOption.TopDirectoryOnly);
@@ -942,7 +1007,7 @@ namespace VelocityFixer
                         try
                         {
                             File.Delete(tempFile);
-                            deletedCount = deletedCount + 1;
+                            deletedCount++;
                         }
                         catch
                         {
@@ -957,8 +1022,7 @@ namespace VelocityFixer
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"\n  [!] Error: {ex.Message}");
                 Console.ForegroundColor = ConsoleColor.White;
-            }
-            
+            }            
             Console.WriteLine("\nPress any key to return...");
             Console.ReadKey();
         }
@@ -966,18 +1030,17 @@ namespace VelocityFixer
         static async Task FixVelocityCrashes()
         {
             Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
             Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
             Console.WriteLine("║                  FIXING VELOCITY CRASHES                       ║");
-            Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("╚════════════════════════════════════════════════════════════════╝\n");
             Console.ForegroundColor = ConsoleColor.White;
 
             try
             {
                 Console.Write("  Enter the folder path where Velocity.exe is located: ");
-                string velocityFolder = Console.ReadLine()?.Trim().Trim('"');
+                string velocityFolder = Console.ReadLine() ?? string.Empty;
+                velocityFolder = velocityFolder.Trim().Trim('"');
 
                 if (string.IsNullOrEmpty(velocityFolder))
                 {
@@ -993,21 +1056,26 @@ namespace VelocityFixer
                 
                 if (!File.Exists(velocityExePath))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"\n  [!] Velocity.exe not found in {velocityFolder}");
+                    Console.ForegroundColor = ConsoleColor.Red;                    Console.WriteLine($"\n  [!] Velocity.exe not found in {velocityFolder}");
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine("\nPress any key to return...");
                     Console.ReadKey();
                     return;
                 }
 
-                LogWithTimestamp("Downloading crash fix...", ConsoleColor.Yellow);
+                LogWithTimestamp("Downloading crash fix...", ConsoleColor.DarkYellow);
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine("  (Catbox can be slow, please be patient)\n");
+                Console.ForegroundColor = ConsoleColor.White;
 
-                string fixUrl = "https://pixeldrain.com/api/file/abwiH8SV";
+                string fixUrl = "https://files.catbox.moe/w8oncl.zip";
                 string zipPath = Path.Combine(Path.GetTempPath(), "VelocityCrashFix.zip");
 
-                var client = new HttpClient();
-                client.Timeout = TimeSpan.FromMinutes(10);
+                var client = new HttpClient
+                {
+                    Timeout = TimeSpan.FromMinutes(10)
+                };
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
                 
                 var response = await client.GetAsync(fixUrl, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
@@ -1017,17 +1085,16 @@ namespace VelocityFixer
                 long totalRead = 0;
                 
                 var contentStream = await response.Content.ReadAsStreamAsync();
-                var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                using var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
                 
                 int bytesRead;
                 while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                 {
                     await fileStream.WriteAsync(buffer, 0, bytesRead);
-                    totalRead = totalRead + bytesRead;
+                    totalRead += bytesRead;
                     
                     if (totalBytes > 0)
-                    {
-                        int percentage = (int)((totalRead * 100) / totalBytes);
+                    {                        int percentage = (int)((totalRead * 100) / totalBytes);
                         int downloadedMB = (int)(totalRead / 1024 / 1024);
                         int totalMB = (int)(totalBytes / 1024 / 1024);
                         
@@ -1043,7 +1110,7 @@ namespace VelocityFixer
                         Console.Write(new string('░', barWidth - filled));
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.Write($"] ");
-                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.ForegroundColor = ConsoleColor.Blue;
                         Console.Write($"{percentage}% ");
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.Write($"({downloadedMB}MB/{totalMB}MB)");
@@ -1051,13 +1118,12 @@ namespace VelocityFixer
                     }
                 }
                 
-                Console.WriteLine();
                 fileStream.Close();
                 contentStream.Close();
-                client.Dispose();
 
-                LogWithTimestamp($"Complete: {new FileInfo(zipPath).Length / 1024 / 1024}MB", ConsoleColor.Green);
-                LogWithTimestamp("Extracting to Velocity folder...", ConsoleColor.Yellow);
+                Console.WriteLine();
+                LogWithTimestamp($"Download complete: {new FileInfo(zipPath).Length / 1024 / 1024}MB", ConsoleColor.Green);
+                LogWithTimestamp("Extracting...", ConsoleColor.DarkYellow);
                 
                 ZipFile.ExtractToDirectory(zipPath, velocityFolder, true);
                 File.Delete(zipPath);
@@ -1100,29 +1166,84 @@ namespace VelocityFixer
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    CreateNoWindow = false
-                }
-            };
-
-            process.OutputDataReceived += (sender, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                    Console.WriteLine($"    {e.Data}");
-            };
-
-            process.ErrorDataReceived += (sender, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine($"    {e.Data}");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    CreateNoWindow = true
                 }
             };
 
             process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+            await process.WaitForExitAsync();
+        }
+
+        static async Task RunInstallerWithProgress(string command)
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c {command}",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+
+            Console.Write("    ");
+            process.Start();
+
+            const int barWidth = 40;
+            int currentProgress = 0;
+            var random = new Random();
+            int stuckCounter = 0;
+            
+            while (!process.HasExited)
+            {
+                if (currentProgress < 90)
+                {
+                    currentProgress += random.Next(2, 6);
+                    stuckCounter = 0;
+                }
+                else if (currentProgress < 98)
+                {
+                    stuckCounter++;
+                    if (stuckCounter > 3)
+                    {
+                        currentProgress += 1;
+                        stuckCounter = 0;
+                    }
+                }
+                
+                if (currentProgress > 98) currentProgress = 98;
+                
+                int filled = (currentProgress * barWidth) / 100;
+                
+                Console.SetCursorPosition(4, Console.CursorTop);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write("[");
+                Console.Write(new string('█', filled));
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.Write(new string('░', barWidth - filled));
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write($"] ");
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.Write($"{currentProgress}%");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write("   ");
+                
+                await Task.Delay(250);
+            }
+
+            Console.SetCursorPosition(4, Console.CursorTop);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("[");
+            Console.Write(new string('█', barWidth));
+            Console.Write($"] ");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write("100%");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine();
+
             await process.WaitForExitAsync();
         }
     }
